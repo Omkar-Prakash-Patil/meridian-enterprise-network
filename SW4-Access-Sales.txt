@@ -1,0 +1,85 @@
+! Sw4-Access-Sales running-config
+! Role: L2 access switch - Sales dept (VLAN 20), port security, DHCP snooping
+!
+hostname Sw4-Access-Sales
+!
+ip domain-name meridian.local
+!
+username admin secret 5 $1$mERr$kku/hiJPh.4Yp8Xor/4kz1
+!
+vtp mode transparent
+!
+ip dhcp snooping vlan 10,20,50
+ip dhcp snooping
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+vlan 10
+ name HR
+!
+vlan 20
+ name Sales
+!
+vlan 50
+ name Servers
+!
+vlan 99
+ name Management
+!
+vlan 150
+ name Voice
+!
+interface FastEthernet0/1
+ switchport trunk native vlan 99
+ ip dhcp snooping trust
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface FastEthernet0/2
+ switchport access vlan 20
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface FastEthernet0/3
+ switchport access vlan 20
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface FastEthernet0/4
+ switchport access vlan 20
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+ip access-list standard ACL-MGMT
+ permit 172.16.0.0 0.0.0.63
+!
+line con 0
+!
+line vty 0 4
+ access-class ACL-MGMT in
+ login local
+ transport input ssh
+line vty 5 15
+ login
+!
+end

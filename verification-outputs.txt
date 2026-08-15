@@ -1,0 +1,137 @@
+============================================================
+ OSPF NEIGHBOR ADJACENCY (from R3-HQ-Edge)
+============================================================
+R3-HQ-Edge#show ip ospf neighbor
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+1.1.1.1           1   FULL/BDR        00:00:36    172.16.2.1      GigabitEthernet0/1
+2.2.2.2           1   FULL/BDR        00:00:36    172.16.2.5      GigabitEthernet0/2
+
+Both core routers (R1, R2) form Full OSPF adjacencies with the edge router.
+Equal-cost dual paths confirmed in the routing table (both R1 and R2 paths
+show up for every VLAN subnet, since R3 is dual-homed to both core routers).
+
+
+============================================================
+ HSRP STATUS (from Sw1-Distribution)
+============================================================
+Sw1-Distribution#show standby brief
+                     P indicates configured to preempt.
+                     |
+Interface   Grp  Pri P State    Active          Standby         Virtual IP
+Vl10        10   110 P Active   local           172.16.0.66     172.16.0.126
+Vl20        20   110 P Active   local           172.16.0.130    172.16.0.190
+Vl50        50   110 P Active   local           172.16.1.2      172.16.1.3
+Vl150       150  110 P Active   local           172.16.1.34     172.16.1.62
+
+SW1 wins Active role on all VLANs (priority 110, preempt enabled).
+SW2 correctly sits Standby (priority 105) on the same virtual IPs.
+
+
+============================================================
+ ETHERCHANNEL STATUS (from Sw1-Distribution)
+============================================================
+Sw1-Distribution#show etherchannel summary
+Flags:  D - down        P - in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      f - failed to allocate aggregator
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+
+Number of channel-groups in use: 1
+Number of aggregators:           1
+
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+----------------------------------------------
+1      Po1(SU)           LACP   Fa0/3(P) Fa0/4(P)
+
+Two physical links (Fa0/3, Fa0/4) bundled into Port-channel1 using LACP
+active mode, successfully "up" (SU) with both members bundled (P).
+
+
+============================================================
+ VLAN DATABASE (from Sw1-Distribution)
+============================================================
+Sw1-Distribution#show vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    (unused ports)
+10   HR                               active
+20   Sales                            active
+50   Servers                          active
+99   Management                       active
+150  Voice                            active
+
+
+============================================================
+ NAT / PAT TRANSLATIONS (from R3-HQ-Edge)
+============================================================
+R3-HQ-Edge#show ip nat translations
+Pro Inside global    Inside local     Outside local    Outside global
+icmp 203.0.113.1:17  172.16.0.71:17   203.0.113.2:17   203.0.113.2:17
+icmp 203.0.113.1:18  172.16.0.71:18   203.0.113.2:18   203.0.113.2:18
+icmp 203.0.113.1:19  172.16.0.71:19   203.0.113.2:19   203.0.113.2:19
+icmp 203.0.113.1:20  172.16.0.71:20   203.0.113.2:20   203.0.113.2:20
+
+PC1's private IP (172.16.0.71) correctly translated to R3's single public
+IP (203.0.113.1) using PAT overload while pinging out to the simulated ISP.
+
+
+============================================================
+ OSPF ROUTING TABLE (from R3-HQ-Edge)
+============================================================
+R3-HQ-Edge#show ip route
+Gateway of last resort is 203.0.113.2 to network 0.0.0.0
+
+172.16.0.0/16 is variably subnetted, 11 subnets, 4 masks
+O    172.16.0.0/26   [110/3] via 172.16.2.1, GigabitEthernet0/1
+                     [110/3] via 172.16.2.5, GigabitEthernet0/2
+O    172.16.0.64/26  [110/3] via 172.16.2.1, GigabitEthernet0/1
+                     [110/3] via 172.16.2.5, GigabitEthernet0/2
+O    172.16.0.128/26 [110/3] via 172.16.2.1, GigabitEthernet0/1
+                     [110/3] via 172.16.2.5, GigabitEthernet0/2
+O    172.16.1.0/27   [110/3] via 172.16.2.1, GigabitEthernet0/1
+                     [110/3] via 172.16.2.5, GigabitEthernet0/2
+O    172.16.1.32/27  [110/3] via 172.16.2.1, GigabitEthernet0/1
+                     [110/3] via 172.16.2.5, GigabitEthernet0/2
+C    172.16.2.0/30 is directly connected, GigabitEthernet0/1
+C    172.16.2.4/30 is directly connected, GigabitEthernet0/2
+O    172.16.5.0/30   [110/2] via 172.16.2.1, GigabitEthernet0/1
+O    172.16.5.4/30   [110/2] via 172.16.2.5, GigabitEthernet0/2
+S*   0.0.0.0/0 [1/0] via 203.0.113.2
+
+Every VLAN subnet is learned via OSPF with dual equal-cost paths, and the
+default route is present and correctly redistributed from R3 into OSPF
+via "default-information originate".
+
+
+============================================================
+ DHCP LEASE CONFIRMATION (from end devices)
+============================================================
+PC1 (VLAN 10, HR):    172.16.0.71 / 255.255.255.192, GW 172.16.0.126, DNS 172.16.1.5
+PC2 (VLAN 10, HR):    172.16.0.73 / 255.255.255.192, GW 172.16.0.126, DNS 172.16.1.5
+PC3 (VLAN 20, Sales): 172.16.0.136 / 255.255.255.192, GW 172.16.0.190, DNS 172.16.1.5
+PC4 (VLAN 20, Sales): 172.16.0.138 / 255.255.255.192, GW 172.16.0.190, DNS 172.16.1.5
+
+All four PCs correctly received a DHCP lease from the centralized DHCP
+server (HQ-Server-1, 172.16.1.5) via ip helper-address relay configured
+on both SW1 and SW2's VLAN 10 and VLAN 20 SVIs.
+
+
+============================================================
+ ACL SEGMENTATION TEST (from PC1, VLAN 10 / HR)
+============================================================
+C:\>ping 172.16.0.136          (PC3, VLAN 20 / Sales)
+Reply from 172.16.0.65: Destination host unreachable.   <-- BLOCKED as designed
+
+C:\>ping 172.16.1.5             (HQ-Server-1, VLAN 50)
+Reply from 172.16.1.5: bytes=32 time<1ms TTL=127          <-- ALLOWED
+
+Extended ACL "ACL-HR-RESTRICT" applied inbound on SW1's VLAN 10 SVI
+successfully blocks HR-to-Sales traffic while permitting all other
+traffic (server access, internet access, etc.), confirming deny-by-
+default department segmentation without breaking legitimate services.

@@ -1,0 +1,62 @@
+! R3-HQ-Edge running-config
+! Role: Internet edge router - NAT/PAT overload, default route, OSPF default-information originate
+!
+hostname R3-HQ-Edge
+!
+ip cef
+no ipv6 cef
+!
+username admin privilege 15 secret 5 $1$mERr$kku/hiJPh.4Yp8Xor/4kz1
+!
+ip domain-name meridian.local
+!
+spanning-tree mode pvst
+!
+interface GigabitEthernet0/0
+ ip address 203.0.113.1 255.255.255.252
+ ip nat outside
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0/1
+ ip address 172.16.2.2 255.255.255.252
+ ip nat inside
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0/2
+ ip address 172.16.2.6 255.255.255.252
+ ip nat inside
+ duplex auto
+ speed auto
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+router ospf 1
+ router-id 3.3.3.3
+ log-adjacency-changes
+ network 172.16.2.0 0.0.0.3 area 0
+ network 172.16.2.4 0.0.0.3 area 0
+ default-information originate
+!
+ip nat inside source list 1 interface GigabitEthernet0/0 overload
+ip classless
+ip route 0.0.0.0 0.0.0.0 203.0.113.2
+!
+access-list 1 permit 172.16.0.0 0.0.3.255
+ip access-list standard ACL-MGMT
+ permit 172.16.0.0 0.0.0.63
+ deny any
+!
+line con 0
+!
+line aux 0
+!
+line vty 0 4
+ access-class ACL-MGMT in
+ login local
+ transport input ssh
+!
+end

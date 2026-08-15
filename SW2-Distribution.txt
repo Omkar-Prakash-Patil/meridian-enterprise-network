@@ -1,0 +1,130 @@
+! Sw2-Distribution running-config
+! Role: L3 distribution switch - VLAN SVIs, HSRP Standby, EtherChannel, single-area OSPF, DHCP relay
+!
+hostname Sw2-Distribution
+!
+ip routing
+!
+username admin privilege 15 secret 5 $1$mERr$kku/hiJPh.4Yp8Xor/4kz1
+!
+ip domain-name meridian.local
+!
+vtp mode transparent
+!
+spanning-tree mode pvst
+!
+vlan 10
+ name HR
+!
+vlan 20
+ name Sales
+!
+vlan 50
+ name Servers
+!
+vlan 99
+ name Management
+!
+vlan 150
+ name Voice
+!
+interface Port-channel1
+ switchport trunk native vlan 99
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface FastEthernet0/1
+ no switchport
+ ip address 172.16.5.6 255.255.255.252
+ duplex auto
+ speed auto
+!
+interface FastEthernet0/2
+ switchport trunk native vlan 99
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface FastEthernet0/3
+ switchport trunk native vlan 99
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 1 mode active
+!
+interface FastEthernet0/4
+ switchport trunk native vlan 99
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 1 mode active
+!
+interface FastEthernet0/5
+ switchport access vlan 50
+ switchport mode access
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+interface Vlan10
+ ip address 172.16.0.66 255.255.255.192
+ ip helper-address 172.16.1.5
+ standby version 2
+ standby 10 ip 172.16.0.126
+ standby 10 priority 105
+!
+interface Vlan20
+ ip address 172.16.0.130 255.255.255.192
+ ip helper-address 172.16.1.5
+ standby version 2
+ standby 20 ip 172.16.0.190
+ standby 20 priority 105
+!
+interface Vlan50
+ ip address 172.16.1.2 255.255.255.224
+ standby version 2
+ standby 50 ip 172.16.1.3
+ standby 50 priority 105
+!
+interface Vlan99
+ ip address 172.16.0.2 255.255.255.192
+!
+interface Vlan150
+ ip address 172.16.1.34 255.255.255.224
+ standby version 2
+ standby 150 ip 172.16.1.62
+ standby 150 priority 105
+!
+router ospf 1
+ router-id 20.20.20.20
+ log-adjacency-changes
+ passive-interface Vlan10
+ passive-interface Vlan20
+ passive-interface Vlan50
+ passive-interface Vlan99
+ passive-interface Vlan150
+ network 172.16.0.0 0.0.0.63 area 0
+ network 172.16.0.64 0.0.0.63 area 0
+ network 172.16.0.128 0.0.0.63 area 0
+ network 172.16.1.0 0.0.0.31 area 0
+ network 172.16.1.32 0.0.0.31 area 0
+ network 172.16.5.4 0.0.0.3 area 0
+!
+ip classless
+!
+ip access-list standard ACL-MGMT
+ permit 172.16.0.0 0.0.0.63
+ deny any
+!
+line con 0
+!
+line aux 0
+!
+line vty 0 4
+ access-class ACL-MGMT in
+ login local
+ transport input ssh
+!
+end
