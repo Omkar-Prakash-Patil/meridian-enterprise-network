@@ -32,6 +32,10 @@ Meridian Enterprise Network simulates a small headquarters site for a growing co
 
 Full configs for every device are in [`/configs`](configs/). Full verification command output is in [`/verification/verification-outputs.txt`](verification/verification-outputs.txt).
 
+## Security Note
+
+All credentials in this repository are lab-only placeholders used in a simulated Cisco Packet Tracer environment and are not used in any production system. Passwords are stored as hashed values (Cisco type 5, MD5-based) rather than plaintext, consistent with real-world configuration hygiene, though this hash type is not considered cryptographically strong by modern standards and would not be used for production secrets.
+
 ## Verification Summary
 
 - ✅ OSPF: both core routers reach `FULL` adjacency with the edge router, dual equal-cost paths confirmed
