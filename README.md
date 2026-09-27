@@ -1,6 +1,6 @@
 # Meridian Enterprise Network — v1.0
 
-A secure, dual-core, dual-distribution enterprise campus network, built and fully verified in Cisco Packet Tracer. This is v1.0 of an ongoing, multi-stage project — future versions will extend this into a multi-site WAN (CCNP-level) and eventually a Zero-Trust security architecture (post CCIE / security specialization).
+A secure, dual-core, dual-distribution enterprise campus network, built and fully verified in Cisco Packet Tracer and EVE-NG. This is v1.0 of an ongoing, multi-stage project — future versions will extend this into a multi-site WAN (CCNP-level) and eventually a Zero-Trust security architecture (post CCIE / security specialization).
 
 **Author:** Omkar Patil
 
